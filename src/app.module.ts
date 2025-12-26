@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { JobApplicationsModule } from './job-applications/job-applications.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JobApplicationsModule } from './job-applications/job-applications.modul
     PrismaModule,
     UsersModule,
     JobApplicationsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
