@@ -2,6 +2,12 @@
 
 Job Tracker is a backend REST API that helps users track job applications and analyze job search activity. This project demonstrates authentication, database design, modular architecture, and testing.
 
+## Live API
+
+The API is deployed on Render:
+
+https://job-tracker-backend-qf20.onrender.com/health
+
 ## Features
 
 - JWT authentication
