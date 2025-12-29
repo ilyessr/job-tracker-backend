@@ -1,4 +1,4 @@
-import { ApplicationStatus } from 'generated/prisma/enums';
+import { ApplicationStatus } from '@prisma/client';
 
 export class JobApplicationResponseDto {
   id: string;
