@@ -9,9 +9,7 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is required to run the seed.');
 }
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString }),
-});
+const prisma = new PrismaClient();
 
 async function main() {
   const passwordHash = await bcrypt.hash('password123', 10);
