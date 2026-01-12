@@ -1,9 +1,18 @@
 process.env.PRISMA_CLIENT_ENGINE_TYPE = 'binary';
+import 'dotenv/config';
 
 import { PrismaClient, ApplicationStatus } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const adapter = new PrismaPg(pool);
+
+export const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const passwordHash = await bcrypt.hash('password123', 10);
