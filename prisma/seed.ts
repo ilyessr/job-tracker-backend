@@ -1,4 +1,7 @@
+console.log('Using Prisma from:', __dirname);
 import { prisma } from './client';
+console.log('🔥 Prisma client with SSL loaded');
+
 import { ApplicationStatus } from '@prisma/client';
 
 import * as bcrypt from 'bcrypt';
