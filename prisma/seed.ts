@@ -1,6 +1,4 @@
-console.log('Using Prisma from:', __dirname);
 import { prisma } from './client';
-console.log('🔥 Prisma client with SSL loaded');
 
 import { ApplicationStatus } from '@prisma/client';
 
@@ -51,16 +49,27 @@ async function main() {
     const date = new Date();
     date.setMonth(date.getMonth() - app.monthsAgo);
 
-    await prisma.jobApplication.create({
-      data: {
+    const exists = await prisma.jobApplication.findFirst({
+      where: {
+        userId: user.id,
         company: app.company,
         jobTitle: app.jobTitle,
-        link: 'https://example.com',
         applicationDate: date,
-        status: app.status,
-        userId: user.id,
       },
     });
+
+    if (!exists) {
+      await prisma.jobApplication.create({
+        data: {
+          company: app.company,
+          jobTitle: app.jobTitle,
+          link: 'https://example.com',
+          applicationDate: date,
+          status: app.status,
+          userId: user.id,
+        },
+      });
+    }
   }
 
   console.log('✅ Seed done.');
