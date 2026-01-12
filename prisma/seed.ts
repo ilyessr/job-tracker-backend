@@ -1,3 +1,5 @@
+process.env.PRISMA_CLIENT_ENGINE_TYPE = 'binary';
+
 import { PrismaClient, ApplicationStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
