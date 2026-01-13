@@ -44,10 +44,12 @@ export class StatsService {
       );
     }
 
-    const byMonth = Array.from(byMonthMap.entries()).map(([month, count]) => ({
-      month,
-      count,
-    }));
+    const byMonth = Array.from(byMonthMap.entries())
+      .map(([month, count]) => ({
+        month,
+        count,
+      }))
+      .sort((a, b) => a.month.localeCompare(b.month));
 
     const totalApplications = byMonth.reduce(
       (sum, item) => sum + item.count,
