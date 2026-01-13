@@ -46,7 +46,7 @@ src/
 npm install
 ```
 
-2. Create a `.env` file at the project root
+2. Create a `.env` file at the project root (required for auth and tests)
 
 ```env
 DATABASE_URL=postgresql://username@localhost:5432/job_tracker
@@ -77,6 +77,8 @@ Password: `password123`
 
 - `GET /stats` returns stats for the authenticated user.
 - Protected routes require `Authorization: Bearer <JWT>`.
+- Roles are enforced server-side: `USER` for standard access and `ADMIN` for admin-only endpoints.
+- Admin-only endpoints include `GET /users`, `POST /users`, and `POST /users/admin`.
 
 ## Tests
 
@@ -84,6 +86,18 @@ Run end-to-end tests:
 
 ```bash
 npm run test:e2e
+```
+
+Make sure your test database is migrated first, typically via:
+
+```bash
+npx prisma migrate dev
+```
+
+Seed data is optional for tests, but you can run it if you want demo users:
+
+```bash
+npx prisma db seed
 ```
 
 ## Architecture Principles
