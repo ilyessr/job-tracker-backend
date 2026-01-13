@@ -1,6 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import * as request from 'supertest';
@@ -41,11 +41,12 @@ export function uniqueEmail(tag: string) {
 export async function createUser(
   prisma: PrismaClient,
   params: {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-},
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role?: Role;
+  },
 ) {
   await prisma.user.deleteMany({ where: { email: params.email } });
 
@@ -56,6 +57,7 @@ export async function createUser(
       password: passwordHash,
       firstName: params.firstName,
       lastName: params.lastName,
+      role: params.role ?? Role.USER,
     },
   });
 }
@@ -68,8 +70,9 @@ export async function login(
   const response = await request(app.getHttpServer())
     .post('/auth/login')
     .send({ email, password })
-    .expect(201);
+    .expect(200);
 
+  console.log(response.body.access_token);
   return response.body.access_token as string;
 }
 

@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { Role } from '@prisma/client';
 import {
   cleanupUserByEmail,
   cleanupUserById,
@@ -14,7 +15,9 @@ describe('UsersController (e2e)', () => {
   let app: INestApplication;
   let email: string;
   let token: string;
+  let adminToken: string;
   let userId: string;
+  let adminId: string;
   const prisma = createPrismaClient();
 
   beforeAll(async () => {
@@ -29,10 +32,21 @@ describe('UsersController (e2e)', () => {
     });
     userId = user.id;
     token = await login(app, email, 'Password123!');
+
+    const admin = await createUser(prisma, {
+      email: uniqueEmail('users-admin'),
+      password: 'Password123!',
+      firstName: 'Admin',
+      lastName: 'User',
+      role: Role.ADMIN,
+    });
+    adminId = admin.id;
+    adminToken = await login(app, admin.email, 'Password123!');
   });
 
   afterAll(async () => {
     await cleanupUserById(prisma, userId);
+    await cleanupUserById(prisma, adminId);
     await prisma.$disconnect();
     await app.close();
   });
@@ -43,6 +57,13 @@ describe('UsersController (e2e)', () => {
 
   it('GET /users (unauthorized)', async () => {
     await request(app.getHttpServer()).get('/users').expect(401);
+  });
+
+  it('GET /users (forbidden for non-admin)', async () => {
+    await request(app.getHttpServer())
+      .get('/users')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(403);
   });
 
   it('GET /users/me (authorized)', async () => {
@@ -62,7 +83,7 @@ describe('UsersController (e2e)', () => {
   it('GET /users (authorized)', async () => {
     const response = await request(app.getHttpServer())
       .get('/users')
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
     expect(Array.isArray(response.body)).toBe(true);
@@ -72,9 +93,20 @@ describe('UsersController (e2e)', () => {
   it('POST /users (authorized)', async () => {
     const newEmail = uniqueEmail('users-create');
 
-    const response = await request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/users')
       .set('Authorization', `Bearer ${token}`)
+      .send({
+        email: newEmail,
+        password: 'Password123!',
+        firstName: 'New',
+        lastName: 'User',
+      })
+      .expect(403);
+
+    const response = await request(app.getHttpServer())
+      .post('/users')
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         email: newEmail,
         password: 'Password123!',
@@ -89,6 +121,30 @@ describe('UsersController (e2e)', () => {
       lastName: 'User',
     });
     expect(response.body.password).toBeUndefined();
+
+    await cleanupUserByEmail(newEmail);
+  });
+
+  it('POST /users/admin (authorized)', async () => {
+    const newEmail = uniqueEmail('users-admin-create');
+
+    const response = await request(app.getHttpServer())
+      .post('/users/admin')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email: newEmail,
+        password: 'Password123!',
+        firstName: 'Admin',
+        lastName: 'Created',
+      })
+      .expect(201);
+
+    expect(response.body).toMatchObject({
+      email: newEmail,
+      firstName: 'Admin',
+      lastName: 'Created',
+      role: Role.ADMIN,
+    });
 
     await cleanupUserByEmail(newEmail);
   });

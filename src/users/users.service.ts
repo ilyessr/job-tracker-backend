@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { UserResponseDto } from './dto/response-user.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -14,6 +15,7 @@ export class UsersService {
         email: true,
         firstName: true,
         lastName: true,
+        role: true,
         createdAt: true,
       },
     });
@@ -33,6 +35,7 @@ export class UsersService {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      role: user.role,
     };
   }
 
@@ -50,12 +53,41 @@ export class UsersService {
         password: hashedPassword,
         firstName: data.firstName,
         lastName: data.lastName,
+        role: Role.USER,
       },
       select: {
         id: true,
         email: true,
         firstName: true,
         lastName: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async createAdmin(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+  }) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    return this.prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: Role.ADMIN,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
         createdAt: true,
       },
     });
