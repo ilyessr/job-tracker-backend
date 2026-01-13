@@ -79,6 +79,8 @@ Password: `password123`
 - Protected routes require `Authorization: Bearer <JWT>`.
 - Roles are enforced server-side: `USER` for standard access and `ADMIN` for admin-only endpoints.
 - Admin-only endpoints include `GET /users`, `POST /users`, and `POST /users/admin`.
+- `GET /job-applications` supports pagination via `page` and `limit` query params (defaults: `page=1`, `limit=20`, max limit 100).
+- Paginated responses return `{ items, total, page, limit, totalPages }`.
 
 ## Tests
 

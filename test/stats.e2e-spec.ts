@@ -92,10 +92,18 @@ describe('StatsController (e2e)', () => {
     const byMonth = [...response.body.byMonth].sort((a: any, b: any) =>
       a.month.localeCompare(b.month),
     );
+    const interviewByMonth = [...response.body.interviewByMonth].sort(
+      (a: any, b: any) => a.month.localeCompare(b.month),
+    );
 
     expect(byMonth.length).toBe(2);
     expect(byMonth[0]).toHaveProperty('month');
     expect(byMonth[0]).toHaveProperty('count');
     expect(response.body.averagePerMonth).toBe(1.5);
+    expect(response.body.interviewTotal).toBe(1);
+    expect(response.body.interviewRate).toBe(33.33);
+    expect(interviewByMonth.length).toBe(2);
+    expect(interviewByMonth[0]).toHaveProperty('month');
+    expect(interviewByMonth[0]).toHaveProperty('count');
   });
 });

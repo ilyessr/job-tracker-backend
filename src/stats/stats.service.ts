@@ -30,7 +30,14 @@ export class StatsService {
       _count: { _all: true },
     });
 
+    const byStatusDateRaw = await this.prisma.jobApplication.groupBy({
+      by: ['status', 'applicationDate'],
+      where: { userId },
+      _count: { _all: true },
+    });
+
     const byMonthMap = new Map<string, number>();
+    const interviewByMonthMap = new Map<string, number>();
 
     for (const row of byDateRaw) {
       const date = new Date(row.applicationDate);
@@ -44,6 +51,22 @@ export class StatsService {
       );
     }
 
+    for (const row of byStatusDateRaw) {
+      if (row.status !== ApplicationStatus.INTERVIEW) {
+        continue;
+      }
+
+      const date = new Date(row.applicationDate);
+      const monthKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, '0')}`;
+
+      interviewByMonthMap.set(
+        monthKey,
+        (interviewByMonthMap.get(monthKey) || 0) + row._count._all,
+      );
+    }
+
     const byMonth = Array.from(byMonthMap.entries())
       .map(([month, count]) => ({
         month,
@@ -51,10 +74,21 @@ export class StatsService {
       }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
+    const interviewByMonth = byMonth.map(({ month }) => ({
+      month,
+      count: interviewByMonthMap.get(month) || 0,
+    }));
+
     const totalApplications = byMonth.reduce(
       (sum, item) => sum + item.count,
       0,
     );
+
+    const interviewTotal = byStatus[ApplicationStatus.INTERVIEW] || 0;
+    const interviewRate =
+      totalApplications > 0
+        ? Number(((interviewTotal / totalApplications) * 100).toFixed(2))
+        : 0;
 
     const averagePerMonth =
       byMonth.length > 0
@@ -64,6 +98,9 @@ export class StatsService {
     return {
       byStatus,
       byMonth,
+      interviewTotal,
+      interviewByMonth,
+      interviewRate,
       averagePerMonth,
     };
   }

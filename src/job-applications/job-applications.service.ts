@@ -59,13 +59,28 @@ export class JobApplicationsService {
     return this.toResponseDto(application);
   }
 
-  async findAllForUser(userId: string) {
-    const apps = await this.prisma.jobApplication.findMany({
-      where: { userId },
-      orderBy: { applicationDate: 'desc' },
-    });
+  async findAllForUser(userId: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
 
-    return apps.map((app) => this.toResponseDto(app));
+    const [apps, total] = await Promise.all([
+      this.prisma.jobApplication.findMany({
+        where: { userId },
+        orderBy: { applicationDate: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.jobApplication.count({ where: { userId } }),
+    ]);
+
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+    return {
+      items: apps.map((app) => this.toResponseDto(app)),
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async update(id: string, userId: string, dto: UpdateJobApplicationDto) {

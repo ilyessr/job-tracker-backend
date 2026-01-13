@@ -6,6 +6,7 @@ import {
   Put,
   Delete,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { User } from '../auth/user.decorator';
@@ -13,6 +14,7 @@ import { JobApplicationsService } from './job-applications.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth/jwt-auth.guard';
 import { CreateJobApplicationDto } from './dto/create-job-application.dto';
 import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
+import { JobApplicationsQueryDto } from './dto/job-applications-query.dto';
 
 @Controller('job-applications')
 @UseGuards(JwtAuthGuard)
@@ -27,8 +29,13 @@ export class JobApplicationsController {
   }
 
   @Get()
-  findAll(@User('userId') userId: string) {
-    return this.jobApplicationsService.findAllForUser(userId);
+  findAll(
+    @User('userId') userId: string,
+    @Query() query: JobApplicationsQueryDto,
+  ) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    return this.jobApplicationsService.findAllForUser(userId, page, limit);
   }
 
   @Get(':id')

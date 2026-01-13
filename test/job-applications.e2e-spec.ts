@@ -108,8 +108,11 @@ describe('JobApplicationsController (e2e)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
 
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBeGreaterThan(0);
+    expect(Array.isArray(response.body.items)).toBe(true);
+    expect(response.body.items.length).toBeGreaterThan(0);
+    expect(response.body.total).toBeGreaterThan(0);
+    expect(response.body.page).toBe(1);
+    expect(response.body.limit).toBe(20);
   });
 
   it('GET /job-applications/:id (authorized)', async () => {
