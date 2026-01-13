@@ -115,6 +115,22 @@ describe('JobApplicationsController (e2e)', () => {
     expect(response.body.limit).toBe(20);
   });
 
+  it('GET /job-applications (list by status)', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/job-applications')
+      .query({ status: ApplicationStatus.INTERVIEW })
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    expect(Array.isArray(response.body.items)).toBe(true);
+    expect(response.body.items.length).toBeGreaterThan(0);
+    expect(
+      response.body.items.every(
+        (item: any) => item.status === ApplicationStatus.INTERVIEW,
+      ),
+    ).toBe(true);
+  });
+
   it('GET /job-applications/:id (authorized)', async () => {
     const created = await request(app.getHttpServer())
       .post('/job-applications')

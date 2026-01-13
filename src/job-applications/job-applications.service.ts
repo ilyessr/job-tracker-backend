@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ApplicationStatus } from '@prisma/client';
 import { CreateJobApplicationDto } from './dto/create-job-application.dto';
 import { UpdateJobApplicationDto } from './dto/update-job-application.dto';
 
@@ -59,17 +60,23 @@ export class JobApplicationsService {
     return this.toResponseDto(application);
   }
 
-  async findAllForUser(userId: string, page: number, limit: number) {
+  async findAllForUser(
+    userId: string,
+    page: number,
+    limit: number,
+    status?: ApplicationStatus,
+  ) {
     const skip = (page - 1) * limit;
+    const where = status ? { userId, status } : { userId };
 
     const [apps, total] = await Promise.all([
       this.prisma.jobApplication.findMany({
-        where: { userId },
+        where,
         orderBy: { applicationDate: 'desc' },
         skip,
         take: limit,
       }),
-      this.prisma.jobApplication.count({ where: { userId } }),
+      this.prisma.jobApplication.count({ where }),
     ]);
 
     const totalPages = total === 0 ? 0 : Math.ceil(total / limit);

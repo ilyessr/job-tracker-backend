@@ -35,7 +35,12 @@ export class JobApplicationsController {
   ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    return this.jobApplicationsService.findAllForUser(userId, page, limit);
+    return this.jobApplicationsService.findAllForUser(
+      userId,
+      page,
+      limit,
+      query.status,
+    );
   }
 
   @Get(':id')
