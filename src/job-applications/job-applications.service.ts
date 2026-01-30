@@ -67,9 +67,11 @@ export class JobApplicationsService {
     page: number,
     limit: number,
     status?: ApplicationStatus,
+    from?: string,
+    to?: string,
   ) {
     const skip = (page - 1) * limit;
-    const where = status ? { userId, status } : { userId };
+    const where = this.buildWhere(userId, status, from, to);
 
     const [apps, total] = await Promise.all([
       this.prisma.jobApplication.findMany({
@@ -90,6 +92,63 @@ export class JobApplicationsService {
       limit,
       totalPages,
     };
+  }
+
+  async findAllForUserExport(
+    userId: string,
+    status?: ApplicationStatus,
+    from?: string,
+    to?: string,
+  ) {
+    const where = this.buildWhere(userId, status, from, to);
+    return this.prisma.jobApplication.findMany({
+      where,
+      orderBy: { applicationDate: 'desc' },
+    });
+  }
+
+  private parseDateOrThrow(value: string, label: string) {
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      throw new BadRequestException(`Invalid ${label} date`);
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const utcDate = new Date(
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+      );
+      if (label === 'to') {
+        utcDate.setUTCHours(23, 59, 59, 999);
+      }
+      return utcDate;
+    }
+
+    return date;
+  }
+
+  private buildWhere(
+    userId: string,
+    status?: ApplicationStatus,
+    from?: string,
+    to?: string,
+  ) {
+    const where: any = { userId };
+    if (status) where.status = status;
+
+    if (from || to) {
+      const fromDate = from ? this.parseDateOrThrow(from, 'from') : undefined;
+      const toDate = to ? this.parseDateOrThrow(to, 'to') : undefined;
+
+      if (fromDate && toDate && fromDate > toDate) {
+        throw new BadRequestException('"from" must be before "to"');
+      }
+
+      where.applicationDate = {};
+      if (fromDate) where.applicationDate.gte = fromDate;
+      if (toDate) where.applicationDate.lte = toDate;
+    }
+
+    return where;
   }
 
   async update(id: string, userId: string, dto: UpdateJobApplicationDto) {

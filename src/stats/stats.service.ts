@@ -96,6 +96,7 @@ export class StatsService {
     return {
       byStatus,
       byMonth,
+      totalApplications,
       interviewTotal,
       interviewByMonth,
       interviewRate,
