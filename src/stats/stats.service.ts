@@ -30,9 +30,9 @@ export class StatsService {
       _count: { _all: true },
     });
 
-    const byStatusDateRaw = await this.prisma.jobApplication.groupBy({
-      by: ['status', 'applicationDate'],
-      where: { userId },
+    const interviewByDateRaw = await this.prisma.jobApplication.groupBy({
+      by: ['applicationDate'],
+      where: { userId, hadInterview: true },
       _count: { _all: true },
     });
 
@@ -51,11 +51,7 @@ export class StatsService {
       );
     }
 
-    for (const row of byStatusDateRaw) {
-      if (row.status !== ApplicationStatus.INTERVIEW) {
-        continue;
-      }
-
+    for (const row of interviewByDateRaw) {
       const date = new Date(row.applicationDate);
       const monthKey = `${date.getFullYear()}-${String(
         date.getMonth() + 1,
@@ -84,7 +80,9 @@ export class StatsService {
       0,
     );
 
-    const interviewTotal = byStatus[ApplicationStatus.INTERVIEW] || 0;
+    const interviewTotal = await this.prisma.jobApplication.count({
+      where: { userId, hadInterview: true },
+    });
     const interviewRate =
       totalApplications > 0
         ? Number(((interviewTotal / totalApplications) * 100).toFixed(2))

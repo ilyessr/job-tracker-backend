@@ -1,7 +1,9 @@
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUrl,
 } from 'class-validator';
@@ -32,4 +34,8 @@ export class CreateJobApplicationDto {
 
   @IsEnum(ApplicationStatusDto)
   status: ApplicationStatusDto;
+
+  @IsOptional()
+  @IsBoolean()
+  hadInterview?: boolean;
 }

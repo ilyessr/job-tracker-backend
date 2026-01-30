@@ -7,5 +7,6 @@ export class JobApplicationResponseDto {
   link: string;
   applicationDate: Date;
   status: ApplicationStatus;
+  hadInterview: boolean;
   createdAt: Date;
 }

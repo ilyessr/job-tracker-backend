@@ -21,6 +21,7 @@ export class JobApplicationsService {
       link: application.link,
       applicationDate: application.applicationDate,
       status: application.status,
+      hadInterview: application.hadInterview,
       createdAt: application.createdAt,
     };
   }
@@ -38,6 +39,7 @@ export class JobApplicationsService {
         link: dto.link,
         applicationDate,
         status: dto.status,
+        hadInterview: dto.hadInterview,
         userId,
       },
     });
@@ -109,6 +111,7 @@ export class JobApplicationsService {
     if (dto.jobTitle !== undefined) updateData.jobTitle = dto.jobTitle;
     if (dto.link !== undefined) updateData.link = dto.link;
     if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.hadInterview !== undefined) updateData.hadInterview = dto.hadInterview;
 
     if (dto.applicationDate !== undefined) {
       const parsed = new Date(dto.applicationDate);
